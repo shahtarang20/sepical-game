@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Gem Blast - Match 3 Puzzle</title>
+<meta name="description" content="Addictive match-3 puzzle game. Match gems, clear levels, beat your high score!">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ================= TOP BAR AD SLOT ================= -->
+  <div class="ad-slot ad-top" id="adTop">
+    <span class="ad-label">Advertisement</span>
+  </div>
+
+  <!-- ================= HOME SCREEN ================= -->
+  <section id="homeScreen" class="screen active">
+    <div class="home-content">
+      <h1 class="game-logo">💎 GEM BLAST</h1>
+      <p class="tagline">Match. Blast. Conquer.</p>
+
+      <div class="stats-row">
+        <div class="stat-pill">
+          <span class="stat-icon">⭐</span>
+          <span id="homeLevel">1</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">❤️</span>
+          <span id="homeLives">5</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">🏆</span>
+          <span id="homeBestScore">0</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-large" id="playBtn">▶ PLAY LEVEL <span id="playLevelNum">1</span></button>
+
+      <div class="secondary-btns">
+        <button class="btn btn-secondary" id="levelsBtn">🗺️ Levels</button>
+        <button class="btn btn-secondary" id="dailyBtn">🎁 Daily Reward</button>
+      </div>
+
+      <button class="btn btn-ghost" id="soundToggleBtn">🔊 Sound On</button>
+    </div>
+  </section>
+
+  <!-- ================= LEVEL MAP SCREEN ================= -->
+  <section id="levelsScreen" class="screen">
+    <div class="screen-header">
+      <button class="btn-back" id="levelsBackBtn">←</button>
+      <h2>Select Level</h2>
+    </div>
+    <div id="levelGrid" class="level-grid"></div>
+  </section>
+
+  <!-- ================= GAME SCREEN ================= -->
+  <section id="gameScreen" class="screen">
+    <div class="game-header">
+      <button class="btn-back" id="gameBackBtn">←</button>
+      <div class="game-header-info">
+        <div class="hud-item">
+          <span class="hud-label">Level</span>
+          <span class="hud-value" id="hudLevel">1</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Score</span>
+          <span class="hud-value" id="hudScore">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Moves</span>
+          <span class="hud-value" id="hudMoves">20</span>
+        </div>
+      </div>
+      <button class="btn-icon" id="pauseBtn">⏸</button>
+    </div>
+
+    <div class="goal-bar" id="goalBar"></div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="scoreProgressFill"></div>
+      </div>
+    </div>
+
+    <div id="boardWrap" class="board-wrap">
+      <div id="board" class="board"></div>
+      <div id="comboText" class="combo-text"></div>
+    </div>
+
+    <div class="boosters-row">
+      <button class="booster-btn" id="boosterShuffle" data-count="3">
+        <span class="booster-icon">🔀</span>
+        <span class="booster-count">3</span>
+      </button>
+      <button class="booster-btn" id="boosterBomb" data-count="2">
+        <span class="booster-icon">💣</span>
+        <span class="booster-count">2</span>
+      </button>
+      <button class="booster-btn" id="boosterExtraMoves" data-count="1">
+        <span class="booster-icon">➕</span>
+        <span class="booster-count">1</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= BOTTOM BANNER AD SLOT (in-game) ================= -->
+  <div class="ad-slot ad-bottom" id="adBottom">
+    <span class="ad-label">Advertisement</span>
+  </div>
+
+</div>
+
+<!-- ================= MODALS / OVERLAYS ================= -->
+
+<div class="overlay" id="pauseOverlay">
+  <div class="modal">
+    <h2>Paused</h2>
+    <button class="btn btn-primary" id="resumeBtn">▶ Resume</button>
+    <button class="btn btn-secondary" id="restartBtn">🔄 Restart Level</button>
+    <button class="btn btn-secondary" id="quitBtn">🏠 Quit to Menu</button>
+  </div>
+</div>
+
+<div class="overlay" id="winOverlay">
+  <div class="modal modal-win">
+    <div class="confetti-emoji">🎉</div>
+    <h2>Level Complete!</h2>
+    <div class="stars-row" id="winStars">
+      <span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span>
+    </div>
+    <p class="win-score">Score: <span id="winScoreVal">0</span></p>
+    <p class="win-bonus" id="winBonusText"></p>
+
+    <!-- Interstitial ad slot placeholder shown between rounds -->
+    <div class="ad-slot ad-interstitial" id="adWin">
+      <span class="ad-label">Advertisement</span>
+    </div>
+
+    <button class="btn btn-primary btn-large" id="nextLevelBtn">Next Level →</button>
+    <button class="btn btn-ghost" id="winMenuBtn">Back to Menu</button>
+  </div>
+</div>
+
+<div class="overlay" id="loseOverlay">
+  <div class="modal">
+    <div class="lose-emoji">😢</div>
+    <h2>Out of Moves</h2>
+    <p class="win-score">Score: <span id="loseScoreVal">0</span></p>
+
+    <button class="btn btn-primary btn-large" id="watchAdContinueBtn">📺 Watch Ad for +5 Moves</button>
+    <button class="btn btn-secondary" id="retryLevelBtn">🔄 Try Again</button>
+
+    <div class="ad-slot ad-interstitial" id="adLose">
+      <span class="ad-label">Advertisement</span>
+    </div>
+
+    <button class="btn btn-ghost" id="loseMenuBtn">Back to Menu</button>
+  </div>
+</div>
+
+<div class="overlay" id="noLivesOverlay">
+  <div class="modal">
+    <div class="lose-emoji">💔</div>
+    <h2>No Lives Left</h2>
+    <p id="livesTimerText">Next life in 09:59</p>
+    <button class="btn btn-primary btn-large" id="watchAdLifeBtn">📺 Watch Ad for a Life</button>
+    <button class="btn btn-ghost" id="noLivesMenuBtn">Back to Menu</button>
+  </div>
+</div>
+
+<div class="overlay" id="dailyOverlay">
+  <div class="modal">
+    <h2>🎁 Daily Reward</h2>
+    <div class="daily-grid" id="dailyGrid"></div>
+    <button class="btn btn-primary btn-large" id="claimDailyBtn">Claim Reward</button>
+    <button class="btn btn-ghost" id="dailyCloseBtn">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
