@@ -626,6 +626,7 @@ function onLevelWin() {
   starEls.forEach((el, i) => el.classList.toggle("earned", i < stars));
 
   showOverlay("winOverlay");
+  initAdSlot("adWin");
 }
 
 document.getElementById("nextLevelBtn").addEventListener("click", () => {
@@ -643,6 +644,7 @@ function onLevelLose() {
   loseLife();
   document.getElementById("loseScoreVal").textContent = game.score;
   showOverlay("loseOverlay");
+  initAdSlot("adLose");
 }
 
 document.getElementById("watchAdContinueBtn").addEventListener("click", () => {
@@ -739,11 +741,67 @@ document.getElementById("boosterExtraMoves").addEventListener("click", () => {
 });
 
 /* ============================================================
+   AD SLOTS - request ads, hide slot cleanly if unfilled
+============================================================ */
+const _initializedAdSlots = new Set();
+
+function initAdSlot(slotId) {
+  if (_initializedAdSlots.has(slotId)) return;
+  const slot = document.getElementById(slotId);
+  if (!slot) return;
+  const ins = slot.querySelector("ins.adsbygoogle");
+  if (!ins) { slot.classList.add("ad-hidden"); return; }
+  _initializedAdSlots.add(slotId);
+
+  try {
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  } catch (e) {
+    slot.classList.add("ad-hidden");
+    return;
+  }
+
+  // AdSense sets data-ad-status="filled"|"unfilled" on the <ins> once it resolves.
+  const checkStatus = () => {
+    const status = ins.getAttribute("data-ad-status");
+    if (status === "unfilled") {
+      slot.classList.add("ad-hidden");
+      return true;
+    }
+    if (status === "filled") {
+      slot.classList.add("ad-filled");
+      return true;
+    }
+    return false;
+  };
+
+  if (checkStatus()) return;
+
+  const observer = new MutationObserver(() => {
+    if (checkStatus()) observer.disconnect();
+  });
+  observer.observe(ins, { attributes: true, attributeFilter: ["data-ad-status"] });
+
+  // Fallback: if AdSense never resolves (blocked, offline, ad blocker), hide after timeout
+  setTimeout(() => {
+    if (!checkStatus()) {
+      observer.disconnect();
+      slot.classList.add("ad-hidden");
+    }
+  }, 3500);
+}
+
+function initAllAdSlots() {
+  ["adTop", "adBottom", "adWin", "adLose"].forEach(initAdSlot);
+}
+
+/* ============================================================
    INIT
 ============================================================ */
 regenLives();
 updateHomeUI();
 document.getElementById("soundToggleBtn").textContent = state.soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+initAdSlot("adTop");
+initAdSlot("adBottom");
 
 // Prevent pull-to-refresh / bounce scrolling on mobile
 document.addEventListener("touchmove", (e) => {
